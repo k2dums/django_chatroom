@@ -14,6 +14,7 @@ from channels.routing import ProtocolTypeRouter,URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 from channels.auth import AuthMiddlewareStack
 import chat.routing
+import async_Chatroom.routing
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mywebsite.settings")
 
 
@@ -23,7 +24,9 @@ application = ProtocolTypeRouter(
         'http':django_asgi_app,
         'websocket':AllowedHostsOriginValidator(
             AuthMiddlewareStack(
-                URLRouter(chat.routing.websocket_urlpatterns)
+                URLRouter(
+                    chat.routing.websocket_urlpatterns
+                    +async_Chatroom.routing.websocket_urlpatterns)
             )
         )
     }
