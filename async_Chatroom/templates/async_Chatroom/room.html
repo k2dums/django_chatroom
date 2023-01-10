@@ -1,0 +1,51 @@
+{% extends "async_Chatroom/layout.html" %}
+
+{% block body %}
+{{ room_name|json_script:"room-name" }}
+<div class="chat_message container">
+    <h1>This is room {{room_name}}</h1>
+    <textarea id="message_texts" cols="100" rows="20"></textarea><br>
+    <input class="message_input" size="98"><br>
+    <input class="submit_btn btn btn-primary" type="submit">
+</div>
+{% endblock %}
+{% block script %}
+    <script>
+        const room_name=JSON.parse(document.querySelector("#room-name").textContent);
+        const chatSocket= new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/as_chat/'
+            + room_name
+            +'/'
+        );
+
+        chatSocket.onmessage=function(e){
+            const data=JSON.parse(e.data);
+            document.querySelector('.message_texts').value+=(data.message + '\n');  
+        };
+        chatSocket.onclose=function(e){
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('.message_input').focus();
+        document.querySelector('.message_input').onkeyup=function(e){
+            if (e.keyCode==13){
+                document.querySelector('.submit_btn').click();
+            }
+        };
+        document.querySelector('.submit_btn').onclick=function(e){
+            const messageInputDom=document.querySelector(".message_input");
+
+            const message=messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message':message
+            }));
+
+            messageInputDom.value='';
+            
+        }
+
+
+    </script>
+{% endblock %}
